@@ -11,13 +11,39 @@ const getNextCandidateCode = async () => {
 };
 
 export const candidateService = {
-  async checkDuplicate(mobileNumber) {
+  async checkDuplicate(mobileNumber, excludeId = null) {
     const normalized = normalizeMobile(mobileNumber);
-    if (!normalized) return null;
-    return Candidate.findOne({
+    if (!normalized || normalized.length < 10) return null;
+
+    const filter = {
       normalizedMobile: normalized,
       isArchived: false,
-    }).select('candidateCode fullName mobileNumber currentRole calledBy availabilityStatus');
+    };
+    if (excludeId) {
+      filter._id = { $ne: excludeId };
+    }
+
+    return Candidate.findOne(filter).select(
+      'candidateCode fullName mobileNumber currentRole calledBy availabilityStatus'
+    );
+  },
+
+  async checkMobile(mobileNumber, excludeId = null) {
+    const duplicate = await this.checkDuplicate(mobileNumber, excludeId);
+    if (!duplicate) {
+      return { exists: false, candidate: null };
+    }
+    return {
+      exists: true,
+      candidate: {
+        _id: duplicate._id,
+        candidateCode: duplicate.candidateCode,
+        fullName: duplicate.fullName,
+        mobileNumber: duplicate.mobileNumber,
+        currentRole: duplicate.currentRole,
+        calledBy: duplicate.calledBy,
+      },
+    };
   },
 
   async create(data, userId) {
@@ -28,7 +54,7 @@ export const candidateService = {
       throw new ApiError(409, 'A candidate with this mobile number already exists', [
         {
           field: 'mobileNumber',
-          message: `Duplicate of ${duplicate.candidateCode} - ${duplicate.fullName}`,
+          message: `Candidate already exists (${duplicate.candidateCode} - ${duplicate.fullName})`,
           existingId: duplicate._id,
         },
       ]);
@@ -167,13 +193,15 @@ export const candidateService = {
 
     if (payload.mobileNumber) {
       payload.normalizedMobile = normalizeMobile(payload.mobileNumber);
-      const duplicate = await Candidate.findOne({
-        normalizedMobile: payload.normalizedMobile,
-        isArchived: false,
-        _id: { $ne: id },
-      });
+      const duplicate = await this.checkDuplicate(payload.mobileNumber, id);
       if (duplicate) {
-        throw new ApiError(409, 'Another candidate already uses this mobile number');
+        throw new ApiError(409, 'A candidate with this mobile number already exists', [
+          {
+            field: 'mobileNumber',
+            message: `Candidate already exists (${duplicate.candidateCode} - ${duplicate.fullName})`,
+            existingId: duplicate._id,
+          },
+        ]);
       }
     }
 

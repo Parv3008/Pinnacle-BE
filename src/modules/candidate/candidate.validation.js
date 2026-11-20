@@ -77,9 +77,17 @@ export const candidateQuerySchema = z.object({
     calledBy: z.enum(['Parv', 'Dhruv', '']).optional().default(''),
     callStatus: z.enum([...CALL_STATUSES, '']).optional().default(''),
     followUpFilter: z.enum(['today', 'overdue', 'upcoming', '']).optional().default(''),
-    checkDuplicate: z.string().optional(),
-    mobile: z.string().optional(),
     sortBy: z.string().optional().default('createdAt'),
     sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
+  }),
+});
+
+export const checkMobileSchema = z.object({
+  query: z.object({
+    mobile: z
+      .string()
+      .min(10, 'Valid mobile number is required')
+      .regex(/^[0-9+\-\s()]{10,15}$/, 'Invalid mobile number'),
+    excludeId: objectId.optional(),
   }),
 });

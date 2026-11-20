@@ -6,6 +6,7 @@ import {
   candidateIdSchema,
   candidateAvailabilitySchema,
   candidateQuerySchema,
+  checkMobileSchema,
 } from './candidate.validation.js';
 import { validate } from '../../middleware/validate.middleware.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
@@ -16,6 +17,7 @@ router.use(authenticate);
 
 router.post('/', validate(createCandidateSchema), candidateController.create);
 router.get('/', validate(candidateQuerySchema), candidateController.list);
+router.get('/check-mobile', validate(checkMobileSchema), candidateController.checkMobile);
 router.get('/export/csv', validate(candidateQuerySchema), candidateController.exportCsv);
 router.get('/:id', validate(candidateIdSchema), candidateController.getById);
 router.patch('/:id', validate(updateCandidateSchema), candidateController.update);

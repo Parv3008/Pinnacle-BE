@@ -12,14 +12,12 @@ export const candidateController = {
     res.status(201).json(new ApiResponse(201, candidate, 'Candidate created successfully'));
   }),
 
-  list: asyncHandler(async (req, res) => {
-    if (req.query.checkDuplicate === 'true' && req.query.mobile) {
-      const duplicate = await candidateService.checkDuplicate(req.query.mobile);
-      return res
-        .status(200)
-        .json(new ApiResponse(200, { duplicate }, 'Duplicate check completed'));
-    }
+  checkMobile: asyncHandler(async (req, res) => {
+    const result = await candidateService.checkMobile(req.query.mobile, req.query.excludeId);
+    res.status(200).json(new ApiResponse(200, result, 'Mobile number check completed'));
+  }),
 
+  list: asyncHandler(async (req, res) => {
     const result = await candidateService.list(req.query);
     res
       .status(200)
