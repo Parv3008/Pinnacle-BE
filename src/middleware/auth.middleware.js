@@ -4,8 +4,16 @@ import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { User } from '../modules/auth/auth.model.js';
 
+const getBearerToken = (req) => {
+  const header = req.headers.authorization || req.headers.Authorization;
+  if (!header || typeof header !== 'string') return null;
+  const [scheme, value] = header.split(' ');
+  if (scheme?.toLowerCase() !== 'bearer' || !value) return null;
+  return value.trim();
+};
+
 export const authenticate = asyncHandler(async (req, res, next) => {
-  const token = req.cookies?.[env.cookieName];
+  const token = req.cookies?.[env.cookieName] || getBearerToken(req);
 
   if (!token) {
     throw new ApiError(401, 'Authentication required');

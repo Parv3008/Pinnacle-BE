@@ -9,7 +9,8 @@ export const authController = {
     const { user, token } = await authService.login(email, password);
 
     res.cookie(env.cookieName, token, authService.getCookieOptions());
-    res.status(200).json(new ApiResponse(200, user, 'Login successful'));
+    // Also return token for cross-site deploys where 3rd-party cookies are blocked
+    res.status(200).json(new ApiResponse(200, { user, token }, 'Login successful'));
   }),
 
   logout: asyncHandler(async (req, res) => {

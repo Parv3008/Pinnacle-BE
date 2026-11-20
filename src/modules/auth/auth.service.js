@@ -35,11 +35,12 @@ export const authService = {
   },
 
   getCookieOptions() {
-    // sameSite none + secure is required when frontend (Vercel) and API are on different domains
+    // Cross-site (Vercel → Render): browsers only send the cookie with SameSite=None; Secure
+    const crossSite = env.isCrossSite || env.isProduction;
     return {
       httpOnly: true,
-      secure: env.isProduction,
-      sameSite: env.isProduction ? 'none' : 'lax',
+      secure: crossSite,
+      sameSite: crossSite ? 'none' : 'lax',
       maxAge: 24 * 60 * 60 * 1000,
       path: '/',
     };
