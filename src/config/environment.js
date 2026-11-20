@@ -18,7 +18,7 @@ for (const key of required) {
 /** Browser Origin never has a trailing slash — normalize for exact CORS match. */
 const normalizeOrigin = (url = '') => String(url).trim().replace(/\/+$/, '');
 
-const frontendUrl = normalizeOrigin(process.env.FRONTEND_URL);
+const frontendUrl = normalizeOrigin(process.env.FRONTEND_URL) || 'http://pinnacle-parv.vercel.app';
 const isLocalFrontend = /localhost|127\.0\.0\.1/i.test(frontendUrl);
 
 export const env = {
